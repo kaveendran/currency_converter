@@ -9,7 +9,8 @@
 <body>
     <div class="main-body">
          
-        <h1>Currency Converter</h1>
+        <h1 style="color:white;">Currency Converter</h1>
+        <h6 style="color:white;">By: kaveendrankavee@gmail.com v1.0</h6>
         <form action="/" method="post">
             <div class="selection-body" >
                 <div class="selections-from" style="margin-right: 10px;">
@@ -346,17 +347,21 @@
 
             <div class="mb-3 mt-3">
                 <label for="input" class="form-label" style="color:white;">Amount</label>
-                <input type="number" class="form-control" id="input" placeholder="Enter Amount" name="amount" style="background-color: rgba(255, 255, 255, 0.8); ">
+                <input type="float" class="form-control" id="input" placeholder="Enter Amount" name="amount" style="background-color: rgba(255, 255, 255, 0.8); ">
             </div>
 
             <button type="submit" class="btn btn-dark">Submit</button>
         </form>
+       
         <h4>{{show}}</h4>
     </div>
 
     <style>
+        h1{
+            color:white;
+        }
         h4{
-            color:rgb(255, 255, 255);
+            color:rgb(14, 222, 14);
             font-weight: 300;
             margin-top: 30px;
         }

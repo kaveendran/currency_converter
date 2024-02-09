@@ -12,14 +12,17 @@ def start():
 		c_from = request.form.get("from")
 		c_to = request.form.get("to")
 		c_amount = request.form.get("amount")
+		# handling empty inputs
+		if not(c_amount):
+			c_amount = '0'
 
-		print(c_amount)
+		print("nothing inputed: {}".format(c_amount))
 
 		
 		# c_amount = int(c_amount)
 		# test = c_from + c_to + c_amount
 		try:
-			c_amount_int = int(c_amount)
+			c_amount_int = float(c_amount)
 		except:
 			print("value error")
 		
@@ -34,34 +37,24 @@ def start():
 			z_m_error = "Invalid Input"
 			return render_template("converter.html",show=z_m_error)
 		elif c_amount == "":
-			empty = "Input Cant be empty"
-
-
-
-			
-		
+			empty = "Input Cant be empty"		
 		else:
 
-			url = 'https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency={}&to_currency={}&apikey=AAS4L22ZFSLATUZ6'.format(c_from,c_to)
+			url = 'https://v6.exchangerate-api.com/v6/78755d6c233558e5e0815a5f/latest/{}'.format(c_from)
 			r = requests.get(url)
 			data = r.json()
 
 			print(data)
 
 			# amount * 5. Exchange Rate = amount
-			E_rate = data["Realtime Currency Exchange Rate"]["5. Exchange Rate"]
+			E_rate = data["conversion_rates"]["{}".format(c_to)]
+			
 			print(E_rate)
 			E_rate_c = float(E_rate)
 			C_amount = E_rate_c * c_amount_int
+			C_amount = round(C_amount,2)
 			print("Amount{}".format(C_amount))
-
-
-
-
-
-		
-			print_text = "Converted Amount Is {} {}".format(C_amount,c_to)
-
+			print_text ="{} To {}  Amount {}{}".format(c_from,c_to,C_amount,c_to)
 			return render_template("converter.html",show=print_text)
 	else:
 		return render_template("converter.html")
