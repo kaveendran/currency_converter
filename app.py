@@ -1,12 +1,111 @@
 
-from flask import Flask,render_template,request,flash
+from flask import Flask,render_template,request,flash,session
 import sqlite3
 import requests
-API= "NCBIFMP7K04TYN59"
-app = Flask(__name__)
+from flask_session import Session
 
+
+
+
+API= "NCBIFMP7K04TYN59"
+
+login_stat= False
+
+
+
+
+
+
+app = Flask(__name__)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+
+# handle login 
 @app.route('/',methods=["POST","GET"])
+def login():
+	# call database for get  password and
+	if request.method == "GET":
+		return render_template("login.html")
+	elif request.method == "POST":
+		# extract data from http request
+		
+		name = request.form.get("name")
+		password =request.form.get("password")
+
+
+
+
+		# handling inputs 
+		if not(name):
+			msg = "Name field empty!"
+			return render_template("login.html",message = msg)
+			# return "name cant be empty"
+		elif not(password):
+			msg= "password cant be empty"
+			return render_template("login.html",message = msg)
+		else:
+			conn = sqlite3.connect("database.db")			
+			cur = conn.cursor()
+			cur.execute("SELECT password FROM data WHERE name ='{}'".format(name))
+			data = cur.fetchall()
+			conn.close()
+			print(data)
+			# print(type(data[0][0]))
+			print(type(password))
+
+			try:
+				data_get =data[0][0]
+
+			except:
+				data_get = 0
+			
+			# error hadling 
+			
+			if data_get == 0:
+				print("No match.......")
+				msg ="password or name not match"				
+				return render_template("login.html",message = msg)
+			
+			elif password == str(data_get):
+
+				print("password match")
+				login_stat = True
+				return render_template("home.html")
+
+			else:
+				print("Password not match")
+				msg ="password not match"				
+				return render_template("login.html",message = msg)
+
+				
+			
+			
+		
+
+			
+
+		
+		
+
+		
+
+	
+		
+
+	
+		
+	
+
+
+
+
+
+@app.route('/next',methods=["POST","GET"])
 def start():
+	print(login_stat)
+	
+		
 	if request.method == "POST":
 		# extract data from http post request
 		c_from = request.form.get("from")
