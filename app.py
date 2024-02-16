@@ -9,9 +9,9 @@ from flask_session import Session
 
 API= "NCBIFMP7K04TYN59"
 
-login_stat= False
-
-
+	
+global login_stat
+login_stat = False
 
 
 
@@ -21,9 +21,17 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
+
+	
+
+
+
+
 # handle login 
 @app.route('/',methods=["POST","GET"])
+
 def login():
+	
 	# call database for get  password and
 	if request.method == "GET":
 		return render_template("login.html")
@@ -70,7 +78,11 @@ def login():
 			elif password == str(data_get):
 
 				print("password match")
+
+				global login_stat
+				
 				login_stat = True
+				print(login_stat)
 				return render_template("home.html")
 
 			else:
@@ -81,22 +93,8 @@ def login():
 				
 			
 			
-		
-
-			
-
-		
-		
-
-		
-
+				
 	
-		
-
-	
-		
-	
-
 
 
 
@@ -164,3 +162,8 @@ if __name__ == '__main__':
 
 
 	app.run(debug=True)
+
+
+
+# created login status so we can track that user is logined or not  for that  need to implement code ???????????
+	
