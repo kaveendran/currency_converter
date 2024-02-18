@@ -1,53 +1,31 @@
 
-from flask import Flask,render_template,request,flash,session
+from flask import Flask,render_template,request,flash,session,redirect,url_for
 import sqlite3
 import requests
 # from flask_session import Session
-
-
-
-
-API= "NCBIFMP7K04TYN59"
-
-	
+API= "NCBIFMP7K04TYN59"	
 global login_stat
 login_stat = False
 
-
-
-
 app = Flask(__name__)
-# app.config["SESSION_PERMANENT"] = False
-# app.config["SESSION_TYPE"] = "filesystem"
-# Session(app)
-
-
-	
-
-
-
+app.secret_key = "kaveendran"
 
 # handle login 
 @app.route('/',methods=["POST","GET"])
 
-def login():
-	
+def login():	
 	# call database for get  password and
 	if request.method == "GET":
 		return render_template("login.html")
 	elif request.method == "POST":
-		# extract data from http request
-		
+		# extract data from http request		
 		name = request.form.get("name")
 		password =request.form.get("password")
-
-
-
-
 		# handling inputs 
 		if not(name):
-			msg = "Name field empty!"
-			return render_template("login.html",message = msg)
+			
+			flash("name is empty!")
+			# return render_template("login.html")
 			# return "name cant be empty"
 		elif not(password):
 			msg= "password cant be empty"
@@ -83,6 +61,10 @@ def login():
 				
 				login_stat = True
 				print(login_stat)
+				# update sessions
+				# session['log'] = True
+				# session['name'] = name
+				# session['id'] = 1234
 				return render_template("home.html")
 
 			else:
@@ -90,20 +72,93 @@ def login():
 				msg ="password not match"				
 				return render_template("login.html",message = msg)
 
-				
-			
-			
-				
-	
 
+# registration handling 
+@app.route("/reg",methods=["POST","GET"])
 
+def register():
+	if request.method == "POST":
+		# extracting data from requests 
+		name = request.form.get("name")
+		password = request.form.get("password")
+		password_confirm = request.form.get("password_confirm")
 
-
-@app.route('/next',methods=["POST","GET"])
-def start():
-	print(login_stat)
-	
 		
+		
+
+		# confirming name is not already available in database
+		conn = sqlite3.connect("database.db")			
+		cur = conn.cursor()
+		cur.execute("SELECT password FROM data WHERE name ='{}'".format(name))
+		data = cur.fetchall()
+		conn.close()
+
+		if data:
+			msg = "Name already taken"
+			flash("{}".format(msg))
+			return render_template("register.html")
+		
+		elif password == password_confirm:
+			# update data to data base 
+			conn = sqlite3.connect("database.db")
+			cur = conn.cursor()
+			cur.execute("INSERT INTO data(name,password) VALUES('{}','{}')".format(name,password_confirm))
+			conn.commit()
+			conn.close()
+
+			return redirect(url_for("login"))
+
+		else:
+			msg = "password didnt match"
+			flash("{}".format(msg))
+			return render_template("register.html")
+	else:
+		return "Not allowed"
+
+# initializing register form 
+@app.route("/r",methods=["POST","GET"])
+def reg_pass():
+	if request.method == "POST":
+		return render_template("register.html")
+	else:
+		return "404"
+	
+
+""" 
+registration  added function ====== ok
+hashing =========================== no
+http injection ==================== ok
+successfull registration redirected to login page ====== ok
+
+"""
+
+
+# logout 
+
+@app.route("/logout",methods=["POST"])
+def logout():
+	return redirect(url_for("login"))
+
+
+
+
+
+
+
+
+
+
+# prevention from http get injection
+@app.route("/home")
+def home():
+	if 'log' in session:
+		return render_template("home.html")
+	return redirect(url_for("login"))
+	
+
+# handle post method for currency convereter
+@app.route('/next',methods=["POST","GET"])
+def start():		
 	if request.method == "POST":
 		# extract data from http post request
 		c_from = request.form.get("from")
@@ -153,17 +208,25 @@ def start():
 			print("Amount{}".format(C_amount))
 			print_text ="{} To {}  Amount {}{}".format(c_from,c_to,C_amount,c_to)
 			return render_template("converter.html",show=print_text)
+	
 	else:
+		return redirect(url_for("login"))
+
+# handle currency converter page 
+@app.route("/next_GET",methods=["POST","GET"])
+def page_post():
+	if request.method == "POST":
+
 		return render_template("converter.html")
+	else:
+		return redirect(url_for("login"))
 
 
 # main driver function
 if __name__ == '__main__':
-
-
 	app.run(debug=True)
 
 
 
-# created login status so we can track that user is logined or not  for that  need to implement code ???????????
+
 	
