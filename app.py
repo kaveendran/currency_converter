@@ -129,6 +129,7 @@ registration  added function ====== ok
 hashing =========================== no
 http injection ==================== ok
 successfull registration redirected to login page ====== ok
+need to test empty spaces
 
 """
 
@@ -221,6 +222,46 @@ def page_post():
 	else:
 		return redirect(url_for("login"))
 
+
+# crypto currency converter page 
+@app.route("/crypto_p",methods=["POST","GET"])
+
+def crypt_conv():
+	if request.method == "POST":
+		crypto_code = request.form.get("crypto")
+		money_code = request.form.get("money")
+		amount = request.form.get("amount")
+
+		if (not amount) and (not crypto_code) and (not money_code):
+			msg = "Empty Fields!"
+			return render_template("crypto.html",show = msg)
+			
+		else:
+			url = "https://rest.coinapi.io/v1/exchangerate/{}/{}".format(crypto_code,money_code)
+			header = {"X-CoinAPI-Key": "8B47736C-CC95-418E-96ED-3658B3A2672C"}
+			data = requests.get(url,headers=header).json()
+			try:
+				rate = data["rate"]
+				base = data["asset_id_base"]
+				quote = data["asset_id_quote"]
+				new_rate = round(rate,2)
+				msg = "Convertion from {} to {} is {},{}".format(base,quote,new_rate,quote)
+				return render_template("crypto.html",show = msg )
+			except:
+				msg = "ERROR!"
+				return render_template("crypto.html",show = msg)		
+	else:
+		return redirect(url_for("login"))
+
+# handle crypto converter by get req security 	
+@app.route("/crypto_get",methods =["POST","GET"])
+def crypto_get():
+
+	if request.method == "POST":
+		return render_template("crypto.html")
+	else:
+		return redirect(url_for("login"))
+# ============================================================================================ tested ok
 
 # main driver function
 if __name__ == '__main__':
