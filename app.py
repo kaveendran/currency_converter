@@ -2,6 +2,7 @@
 from flask import Flask,render_template,request,flash,session,redirect,url_for
 import sqlite3
 import requests
+from datetime import datetime
 # from flask_session import Session
 API= "NCBIFMP7K04TYN59"	
 global login_stat
@@ -56,6 +57,10 @@ def login():
 			elif password == str(data_get):
 
 				print("password match")
+
+				# for manage sessions update user name 
+				session["user"] = name
+				print(session["user"])
 
 				global login_stat
 				
@@ -132,12 +137,25 @@ successfull registration redirected to login page ====== ok
 need to test empty spaces
 
 """
+# home function 
+# for redirect things 
+
+@app.route("/home",methods =["POST","GET"])
+def home_red():
+	if request.method == "POST":
+		return render_template("home.html")
+	else:
+		return redirect(url_for("login"))
+
+
+
 
 
 # logout 
-
 @app.route("/logout",methods=["POST"])
 def logout():
+	session.pop("user",None)
+	print(session)
 	return redirect(url_for("login"))
 
 
@@ -165,6 +183,7 @@ def start():
 		c_from = request.form.get("from")
 		c_to = request.form.get("to")
 		c_amount = request.form.get("amount")
+		
 		# handling empty inputs
 		if not(c_amount):
 			c_amount = '0'
@@ -208,6 +227,27 @@ def start():
 			C_amount = round(C_amount,2)
 			print("Amount{}".format(C_amount))
 			print_text ="{} To {}  Amount {}{}".format(c_from,c_to,C_amount,c_to)
+
+			# try to store conversion on data base 
+			name = session["user"]
+			now = datetime.now()
+			conv= f"CURRENCY -{c_amount} {c_from} =====> IS {C_amount} {c_to}"
+			conn = sqlite3.connect("database.db")
+			cur = conn.cursor()
+			cur.execute("INSERT INTO conv('name','conerter','time') VALUES('{}','{}','{}')".format(name,conv,now))
+			conn.commit()
+			conn.close()
+			print("conversion data inserted into dtabase")
+
+
+
+
+
+
+
+
+
+
 			return render_template("converter.html",show=print_text)
 	
 	else:
@@ -238,7 +278,7 @@ def crypt_conv():
 			
 		else:
 			url = "https://rest.coinapi.io/v1/exchangerate/{}/{}".format(crypto_code,money_code)
-			header = {"X-CoinAPI-Key": "8B47736C-CC95-418E-96ED-3658B3A2672C"}
+			header = {"X-CoinAPI-Key": "AD8095AA-F9DA-42CB-B4C4-FAAB69202FF6"}
 			data = requests.get(url,headers=header).json()
 			try:
 				rate = data["rate"]
@@ -262,6 +302,52 @@ def crypto_get():
 	else:
 		return redirect(url_for("login"))
 # ============================================================================================ tested ok
+
+
+# crypto to crypto conversion and security
+
+@app.route("/crypto_c",methods=["POST","GET"])
+def crypto_cry():
+	if request.method == "POST":
+
+		return render_template("crypto_nex.html")
+	else:
+		return redirect(url_for("login"))
+
+
+@app.route("/crypto_to_c",methods =["POST","GET"])
+def crypto_crypto():
+	if request.method == "POST":
+		crypto_code = request.form.get("crypto")
+		money_code = request.form.get("money")
+		amount = request.form.get("amount")
+
+		if (not amount) and (not crypto_code) and (not money_code):
+			msg = "Empty Fields!"
+			return render_template("crypto_nex.html",show = msg)
+			
+		else:
+			url = "https://rest.coinapi.io/v1/exchangerate/{}/{}".format(crypto_code,money_code)
+			header = {"X-CoinAPI-Key": "8B47736C-CC95-418E-96ED-3658B3A2672C"}
+			data = requests.get(url,headers=header).json()
+			try:
+				rate = data["rate"]
+				base = data["asset_id_base"]
+				quote = data["asset_id_quote"]
+				new_rate = round(rate,2)
+				msg = "Convertion from {} to {} is {},{}".format(base,quote,new_rate,quote)
+				return render_template("crypto_nex.html",show = msg )
+			except:
+				msg = "ERROR!"
+				return render_template("crypto_nex.html",show = msg)		
+
+# ========================================================================================================== ok 
+
+
+				
+
+
+
 
 # main driver function
 if __name__ == '__main__':
