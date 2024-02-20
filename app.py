@@ -145,7 +145,7 @@ def home_red():
 	if request.method == "POST":
 		return render_template("home.html")
 	else:
-		return redirect(url_for("login"))
+		return render_template("home.html")
 
 
 
@@ -159,7 +159,9 @@ def logout():
 	return redirect(url_for("login"))
 
 
-
+@app.route("/home1")
+def home1():
+	return redirect(url_for("home_red"))
 
 
 
@@ -231,22 +233,13 @@ def start():
 			# try to store conversion on data base 
 			name = session["user"]
 			now = datetime.now()
-			conv= f"CURRENCY -{c_amount} {c_from} =====> IS {C_amount} {c_to}"
+			conv= f"CURRENCY - CURRENCY {c_amount} {c_from} TO {c_to} =====> IS {C_amount} {c_to}"
 			conn = sqlite3.connect("database.db")
 			cur = conn.cursor()
 			cur.execute("INSERT INTO conv('name','conerter','time') VALUES('{}','{}','{}')".format(name,conv,now))
 			conn.commit()
 			conn.close()
-			print("conversion data inserted into dtabase")
-
-
-
-
-
-
-
-
-
+			print("currency conversion data inserted into dtabase")
 
 			return render_template("converter.html",show=print_text)
 	
@@ -263,7 +256,7 @@ def page_post():
 		return redirect(url_for("login"))
 
 
-# crypto currency converter page 
+# crypto to  currency converter page 
 @app.route("/crypto_p",methods=["POST","GET"])
 
 def crypt_conv():
@@ -286,6 +279,20 @@ def crypt_conv():
 				quote = data["asset_id_quote"]
 				new_rate = round(rate,2)
 				msg = "Convertion from {} to {} is {},{}".format(base,quote,new_rate,quote)
+
+				# store crypto to currency conversion data on data base
+				name = session["user"]
+				now = datetime.now()
+				conv= f"CRYPTO TO CURRENCY -{amount}{base} TO  {quote} =====> IS {new_rate} {quote}"
+				conn = sqlite3.connect("database.db")
+				cur = conn.cursor()
+				cur.execute("INSERT INTO conv('name','conerter','time') VALUES('{}','{}','{}')".format(name,conv,now))
+				conn.commit()
+				conn.close()
+				print("currency conversion data inserted into database")
+
+				
+
 				return render_template("crypto.html",show = msg )
 			except:
 				msg = "ERROR!"
@@ -335,7 +342,17 @@ def crypto_crypto():
 				base = data["asset_id_base"]
 				quote = data["asset_id_quote"]
 				new_rate = round(rate,2)
-				msg = "Convertion from {} to {} is {},{}".format(base,quote,new_rate,quote)
+				msg = "Convertion from {} {} to {} is {},{}".format(amount,base,quote,new_rate,quote)
+				name = session["user"]
+				now = datetime.now()
+				conv= f"CRYPTO TO CRYPTO -{amount}{base} TO {quote} =====> IS {new_rate} {quote}"
+				conn = sqlite3.connect("database.db")
+				cur = conn.cursor()
+				cur.execute("INSERT INTO conv('name','conerter','time') VALUES('{}','{}','{}')".format(name,conv,now))
+				conn.commit()
+				conn.close()
+				print("crypto to crypto conversion data inserted into dtabase")
+
 				return render_template("crypto_nex.html",show = msg )
 			except:
 				msg = "ERROR!"
@@ -343,7 +360,23 @@ def crypto_crypto():
 
 # ========================================================================================================== ok 
 
-
+# history sessions handling 
+@app.route("/history",methods =["POST","GET"])
+def history():
+	if request.method == "GET":
+		name = session["user"]
+		conn = sqlite3.connect("database.db")
+		cur = conn.cursor()
+		cur.execute("SELECT conerter,time FROM conv WHERE name ='{}'".format(name))
+		data = cur.fetchall()
+		print(data)
+		# data is a list
+		if name == session["user"]:
+			return render_template("history.html",data_list = data)
+		else:
+			return "404"
+	else:
+		return "ERROR!"
 				
 
 
