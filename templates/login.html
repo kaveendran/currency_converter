@@ -12,7 +12,10 @@
     />
   </head>
   <body>
-    <h1><img src="static/logo1.png" alt="" /></h1>
+    <div class="image">
+
+
+      <h1><img src="static/logo1.png" alt="" /></h1>
     <div class="body">
       <form action="/" class="form" method="post">
         <h3>Login</h3>
@@ -47,10 +50,17 @@
 
         <button type="submit" class="btn btn-primary">Submit</button>
       </form>
-      <form action="/r" method="post">Didn't have account <button style="background-color:rgb(255, 255, 255,0); border:2px solid rgb(0, 0, 0,0); color:white;margin-top:10px">Register</button></form>
+      <form action="/r" method="post">Didn't have account <button style="background-color:rgb(255, 255, 255,0); border:2px solid rgb(0, 0, 0,0); color:rgb(255, 31, 31);margin-top:10px">Register</button></form>
     </div>
 
+    </div>
+
+
     <style>
+      body{
+        margin:0px;
+        padding:0px;
+      }
       img {
         width: 200px;
         height: 100px;
@@ -86,14 +96,13 @@
         margin-top: 0px;
         box-sizing: border-box;
       }
-      body {
+      .image {
+       
         background-image: url("static/temp.jpg");
-
-        height: auto;
-
-        background-position: center;
-        background-repeat: repeat;
-        background-size: cover;
+        height:100vh;
+        background-size: cover; 
+        background-repeat: no-repeat;
+        
       }
     </style>
   </body>
