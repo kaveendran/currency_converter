@@ -152,11 +152,16 @@ def home_red():
 
 
 # logout 
-@app.route("/logout",methods=["POST"])
+@app.route("/logout",methods=["POST","GET"])
 def logout():
-	session.pop("user",None)
-	print(session)
-	return redirect(url_for("login"))
+	if request.method == "POST":
+
+		session.pop("user",None)
+		print(session)
+		return redirect(url_for("login"))
+	else:
+		return redirect(url_for("login"))
+
 
 
 @app.route("/home1")
